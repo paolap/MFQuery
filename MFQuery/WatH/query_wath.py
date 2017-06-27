@@ -20,6 +20,8 @@ limitations under the License.
 from __future__ import print_function
 
 import argparse
+import sys
+from MFQuery.helpers import *
 # import the dictionaries describing the metadata associated with the directory structure and the experiment
 from MFQuery.data import drs_meta, experiment_meta
 
@@ -34,7 +36,7 @@ def parse_input():
              -- the opendap urls of the search results in a file
              -- donwload the simulations to the current directory 
              -- a python list with the simulations opendap urls (if used in interactive mode)
-             The arguments year, sst_model and ..  can be repeated, for
+             The arguments year, sst and ..  can be repeated, for
             example to select two sst-model:
             -m HadGEM2-ES MMM          NB (MMM is the MultiModel Mean)
             At least one experiment/year should be passed all other arguments are optional.
@@ -47,62 +49,98 @@ def parse_input():
             The additional arguments replica, node and project modify the main ESGF search parameters. Defaults are
             no replicas, PCMDI node and CMIP5 project. If you chnage project you need to export a different local database,
                ''',formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('-a','--admin', action='store_true', default=False, help='running script as admin', required=False)
     parser.add_argument('-y','--year', type=str, nargs="*", help='Year indicating experiment', required=True)
-    parser.add_argument('-m','--sst_model', type=str, nargs="*", help='CMIP5 model used to calculate delta-sst'+
+    parser.add_argument('-m','--sst', type=str, nargs="*", help='CMIP5 model used to calculate delta-sst'+
            ' Can be "None"', required=False)
     parser.add_argument('-f','--forcing', type=str, help='NAT or ALL forcing', required=False)
     parser.add_argument('-g','--ghg', type=str, help='simulation with GHG, is True or False', required=False)
     parser.add_argument('-w','--wind_rh', type=str, help='simulation with WIND-RH, is True or False', required=False)
-    parser.add_argument('-fi','--fire_index', type=str, help='simulation with FFDI, is True or False', required=False)
+    parser.add_argument('-fi','--ffdi', type=str, help='simulation with FFDI, is True or False', required=False)
     parser.add_argument('-k','--keyword', type=str, nargs="*", help='extra keyword to be look for in description', required=False)
     parser.add_argument('-v','--variable', type=str, nargs="*", help='variable', required=False)
     parser.add_argument('-ok','--output_kind', type=str, nargs="*", help='pcl, pdl or pel', required=False)
     parser.add_argument('-o','--opendap', help='search also replica', action='store_true', required=False)
     parser.add_argument('-d','--download', type=str, help='ESGF node to use for search', required=False)
     parser.add_argument('-p','--download_path', type=str, help='ESGF project to search', required=False)
+    parser.add_argument('-pm','--print_meta', help='print metadata documents and exit', action='store_true', required=False)
+    parser.add_argument('-a','--admin', action='store_true', default=False, help='running script as admin', required=False)
     return vars(parser.parse_args())
-    return kwargs
 
 
 def assign_constraints():
     ''' Assign default values and input to constraints '''
     kwargs = parse_input()
+    admin =  kwargs.pop("admin")
+    # collect all input arguments related to output format in separate dictionary
     out_args={}
     out_args['opendap'] = kwargs.pop("opendap")
     out_args['variable'] = kwargs.pop("variable")
     out_args['output_kind'] = kwargs.pop("output_kind")
     out_args['download'] = kwargs.pop("download")
     out_args['download_path'] = kwargs.pop("download_path")
-    searchargs['node'] = kwargs.pop("node")
+    out_args['print_meta'] = kwargs.pop("print_meta")
+    # copy remaining arguments and eliminate the ones which are empty or None
     for k,v in list(kwargs.items()):
-        if v is None or v==[]: newkwargs.pop(k)
-    for k,v in list(searchargs.items()):
-        if v is None or v==[]: searchargs.pop(k)
-    return newkwargs, out_args
+        if v is None or v==[]: kwargs.pop(k)
+    return kwargs, out_args, admin
 
 
-def experiment_description():
-    ''' import definition of weather_at_home:experiment_description metadata document '''
-    return
-
-
-def query_mf(kwargs):
-    ''' query mediaflux using input arguments '''
+def query_mf(query,template):
+    ''' query mediaflux using input arguments and selected output template '''
     results={}
-    query="WHERE"
-    pass
     return results
 
+def build_query(kwargs):
+    ''' build bulk of query string based on input arguments '''
+    query = ""
+    # define MF metadata namespace containing metadata documents
+    namespace = "weather_at_home"
+    for k,v in kwargs.items():
+        if k in drs_meta.keys():
+            meta_doc = "drs_meta"
+        else:
+            meta_doc = "experiment_description"
+        value=str(v)
+        query += namespace + ":" + meta_doc + "/" + k + "=" + "'" + value + "' and "
+   # xpath(weather_at_home:drs_meta/volunteer)
+    # return query without last for characters so we don't return the last "and "
+    print(query)
+    return query[:-4]
+
+
+def build_template():
+    base = ( '''asset.query :where "namespace>=/WatH-Test/model_output2 '''
+             '''and type='application/x-netcdf' and QUERY ''' 
+             ''' :action get-distinct-values ''' )
+    thredds_out = ( ''' :xpath -ename url string.format('https://http://144.6.229.249/thredds/catalog/my/test/all2%s?','''
+                     ''',replace(xvalue('namespace'),'/WatH-Test/model_output2',''))''' )
+    base2 =  ''' curl --insecure -X POST -H 'Content-Type: text/xml; charset=utf-8' -d '<request><service name="asset.query" session="15bf0af565bbGXRL1cTxXXoqHKmlwXfGBUNZGo69yLk"><args><where>namespace>=/WatH-Test/model_output2 and type='application/x-netcdf' and (YOUR_QUERY)</where><action>get-distinct-values</action><xpath name="url">string.format('https://thredds.com.au%s?',replace(xvalue('namespace'),'/WatH-Test/model_output2',''))</xpath></args></service></request>' 'https://livearc-00.tpac.org.au/__mflux_svc__' " '''
+    return base
 
 def main():
     ''' '''
-    
     # parse input arguments 
-    kwargs, out_args = assign_constraints()
-    # query mediaflux
-    result_dict = query_mf(kwargs)
-    print(result_dict)
+    query_args, out_args, admin = assign_constraints()
+    # if user wants to print metadata definition, print and exit 
+    if out_args['print_meta']: 
+        print_meta(drs_meta)
+        print_meta(experiment_meta)
+        sys.exit()
+    print(out_args)
+    # establish session 
+    #session = MFsession()
+    template = build_template()
+    # get constraints combination
+    combs=combine_constraints(**query_args)
+    # for each constraints combination
+    for constraints in combs:
+        print(constraints)
+        query = build_query(constraints)
+        # query mediaflux
+        result_dict = query_mf(query,template)
+        print(result_dict)
     # do something with result!
     # open file?
 
+if __name__ == "__main__":
+    main()

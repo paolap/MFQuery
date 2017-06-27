@@ -51,5 +51,7 @@ drs_meta = { 'umid': ['string', 'Model simulation id indicating the experiment. 
  'year': ['string', 'The year indicating the experiment, if 2012 then experiment simulations run from Dec 2012 to November 2013 included'],
  'volunteer': ['string', 'Unique volunteer id used in to name zip files containing a simulation output and in directory grouping them'] }
 # save dictionaries in pickle file
-pickle.dump( drs_meta, open( "meta_doc_pickle", "wb" ) )
-pickle.dump( experiment_meta, open( "meta_doc_pickle", "wb" ) )
+f=open("meta_doc_pickle","wb")
+pickle.dump( drs_meta, f )
+pickle.dump( experiment_meta, f )
+f.close()
