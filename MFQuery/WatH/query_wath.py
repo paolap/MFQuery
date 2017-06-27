@@ -21,7 +21,7 @@ from __future__ import print_function
 
 import argparse
 import sys
-from MFQuery.helpers import *
+from MFQuery.Helpers.helpers import *
 # import the dictionaries describing the metadata associated with the directory structure and the experiment
 from MFQuery.data import drs_meta, experiment_meta
 
@@ -53,17 +53,17 @@ def parse_input():
     parser.add_argument('-m','--sst', type=str, nargs="*", help='CMIP5 model used to calculate delta-sst'+
            ' Can be "None"', required=False)
     parser.add_argument('-f','--forcing', type=str, help='NAT or ALL forcing', required=False)
-    parser.add_argument('-g','--ghg', type=str, help='simulation with GHG, is True or False', required=False)
-    parser.add_argument('-w','--wind_rh', type=str, help='simulation with WIND-RH, is True or False', required=False)
-    parser.add_argument('-fi','--ffdi', type=str, help='simulation with FFDI, is True or False', required=False)
+    parser.add_argument('-g','--ghg', help='simulation with GHG, is True or False', action='store_true', required=False)
+    parser.add_argument('-w','--wind_rh', help='simulation with WIND-RH, is True or False', action='store_true', required=False)
+    parser.add_argument('-fi','--ffdi', help='simulation with FFDI, is True or False', action='store_true', required=False)
     parser.add_argument('-k','--keyword', type=str, nargs="*", help='extra keyword to be look for in description', required=False)
     parser.add_argument('-v','--variable', type=str, nargs="*", help='variable', required=False)
     parser.add_argument('-ok','--output_kind', type=str, nargs="*", help='pcl, pdl or pel', required=False)
-    parser.add_argument('-o','--opendap', help='search also replica', action='store_true', required=False)
-    parser.add_argument('-d','--download', type=str, help='ESGF node to use for search', required=False)
-    parser.add_argument('-p','--download_path', type=str, help='ESGF project to search', required=False)
+    parser.add_argument('-o','--opendap', help='print thredds opendap urls for files returned by query', action='store_true', required=False)
+    parser.add_argument('-d','--download', help='download files returned by query', action='store_true', required=False)
+    parser.add_argument('-p','--download_path', type=str, help='Define local path where to download files, if not defined will use current path', required=False)
     parser.add_argument('-pm','--print_meta', help='print metadata documents and exit', action='store_true', required=False)
-    parser.add_argument('-a','--admin', action='store_true', default=False, help='running script as admin', required=False)
+    parser.add_argument('-a','--admin', action='store_true', help='running script as admin', required=False)
     return vars(parser.parse_args())
 
 
@@ -79,10 +79,15 @@ def assign_constraints():
     out_args['download'] = kwargs.pop("download")
     out_args['download_path'] = kwargs.pop("download_path")
     out_args['print_meta'] = kwargs.pop("print_meta")
+    # collect all boolean arguments separately
+    bool_args={}
+    for k,v in list(kwargs.items()):
+        if type(v) == type(True): 
+            bool_args[k] = kwargs.pop(k)
     # copy remaining arguments and eliminate the ones which are empty or None
     for k,v in list(kwargs.items()):
         if v is None or v==[]: kwargs.pop(k)
-    return kwargs, out_args, admin
+    return kwargs, bool_args, out_args, admin
 
 
 def query_mf(query,template):
@@ -120,7 +125,7 @@ def build_template():
 def main():
     ''' '''
     # parse input arguments 
-    query_args, out_args, admin = assign_constraints()
+    query_args, bool_args, out_args, admin = assign_constraints()
     # if user wants to print metadata definition, print and exit 
     if out_args['print_meta']: 
         print_meta(drs_meta)
@@ -130,11 +135,16 @@ def main():
     # establish session 
     #session = MFsession()
     template = build_template()
-    # get constraints combination
+    # get possible combinations of 'year' and 'sst'
+    # build one query for each of the year/sst combinations 
+    print(query_args)
+    print(bool_args)
+
     combs=combine_constraints(**query_args)
-    # for each constraints combination
+    
+    print(combs)
     for constraints in combs:
-        print(constraints)
+        print(constraints.update(bool_args))
         query = build_query(constraints)
         # query mediaflux
         result_dict = query_mf(query,template)
