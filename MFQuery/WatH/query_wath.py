@@ -25,7 +25,7 @@ from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS 
 
 from MFQuery.MF.helpers import *
-import MFQuery.MF.MF  
+import MFQuery.MF.MF as MF  
 # import the dictionaries describing the metadata associated with the directory structure and the experiment
 from MFQuery.data import drs_meta, experiment_meta
 
@@ -79,7 +79,7 @@ def assign_constraints():
     # collect all input arguments related to output format in separate dictionary
     out_args={}
     out_args['opendap'] = kwargs.pop("opendap")
-    out_args['ncss'] = kwargs.pop("opendap")
+    out_args['ncss'] = kwargs.pop("ncss")
     out_args['variable'] = kwargs.pop("variable")
     out_args['output_kind'] = kwargs.pop("output_kind")
     out_args['download'] = kwargs.pop("download")
@@ -154,8 +154,8 @@ def main():
     session = MF.connect()
     # build query and then call MF.query to execute
     squery = build_query(query_args)
-    squery += MF.action('count')
-    output = MF.query(squery)
+    action = MF.actions('count')
+    output = session.query(squery+action)
     print(output)
     sys.exit()
     results = process_output(out_args)

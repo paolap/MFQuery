@@ -14,6 +14,8 @@ limitations under the License.
 """
 
 from __future__ import print_function
+import os
+import subprocess
 
 
 class Session(object):
@@ -24,7 +26,7 @@ class Session(object):
         self.jar_file = jar_file 
         return self
 
-    def query(self, squery)
+    def query(self, squery):
         ''' execute query passed as input '''
         script = self.wrapper(squery)
         out = self.execute(script)
@@ -33,12 +35,12 @@ class Session(object):
 
     def wrapper(self, cmd):
         ''' create a java script wrapper for query command '''
-        script = 'java -Dmf.cfg=% -jar % nogui %s ', % (self.cfg_file, self.jar_file, cmd)
+        script = 'java -Dmf.cfg={0} -jar {1} nogui {2} '.format(self.cfg_file, self.jar_file, cmd)
         return script
 
-    def execute(self,script)
+    def execute(self,script):
         ''' execute java script '''
-        print "exec: [%s]" % script
+        print("exec: {0}".format(script))
 # CURRENT - for security reasons, shell=True should not be set
 # CURRENT - the shlex approach works on unix, but not on windows ...
 #       proc = subprocess.Popen(shlex.split(script), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -54,15 +56,15 @@ class Session(object):
                         raise Exception("Process execution failed.")
         return stdout
 
-        def parse_response(response)
+        def parse_response(self, response):
             ''' parse response returned by server to a dictionary '''
             resp_dict=response
             return resp_dict
 
-        def actions(value):
-            ''' attach an :action to a query before execution '''
-            action = ' :action ' + value
-            return action
+def actions(value):
+    ''' attach an :action to a query before execution '''
+    action = ' :action ' + value
+    return action
 
 
 def connect(cfg = None , jar = None):
@@ -81,9 +83,9 @@ def connect(cfg = None , jar = None):
 
     # if user didn't pass configuration and jar file assume their in $HOME
     if cfg is None:
-        cfg = os.environ.get($ATERMCFG, "$HOME/aterm.cfg")
+        cfg = os.environ.get('ATERMCFG', "$HOME/aterm.cfg")
     if jar is None:
-        jar = os.environ.get($ATERMJAR, "$HOME/aterm.jar")
+        jar = os.environ.get('ATERMJAR', "$HOME/aterm.jar")
 
     session = Session()
     session.open(cfg, jar)
