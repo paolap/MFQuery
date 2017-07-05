@@ -37,3 +37,23 @@ def print_meta(meta_dict):
         print ('type: ',v[0])
         print ('summary: ',v[1])
     return
+
+
+def meta_arguments(args_list):
+    ''' gets a list of metadata arguments as [arg1, value1, arg2, value2, arg3, value3] '''
+    args_dict = {}
+    # use eval_bool function to assign correct type to boolean values
+    args = [ eval_bool(i) for i in args_list]
+    for i in range(0,len(args),2):
+        args_dict[args[i]] = args[i+1]
+    return args_dict
+
+
+def eval_bool(bool_str):
+    ''' Get a string if represents a boolean convert it to bool type '''
+    if bool_str in ["1","T", "True","true","Y","y","yes","Yes","YES","TRUE"]:
+        return True
+    elif bool_str in ["0","F", "False","false","N","n","no","No","NO","FALSE"]:
+        return False
+    else:
+        return bool_str
