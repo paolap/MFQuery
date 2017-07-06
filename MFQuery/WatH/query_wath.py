@@ -87,11 +87,14 @@ def assign_constraints():
     out_args['print_meta'] = kwargs.pop("print_meta")
     # collect all boolean arguments separately
     extra_args = meta_arguments(kwargs.pop("meta"))
-    
+    kwargs.update(extra_args)
+    # if sst and year have only one value eliminate list
+    for k in ['sst','year']:
+        if len(kwargs[k]) == 1 : kwargs[k] = kwargs[k][0]  
     # copy remaining arguments and eliminate the ones which are empty or None
     for k,v in list(kwargs.items()):
         if v is None or v==[]: kwargs.pop(k)
-    return kwargs, extra_args, out_args, admin
+    return kwargs, out_args, admin
 
 
 def query_mf(query,template):
@@ -101,6 +104,7 @@ def query_mf(query,template):
 
 def build_query(kwargs):
     ''' build bulk of query string based on input arguments '''
+    print(kwargs)
     query = '''asset.query :where "namespace>='/WatH-Test/model_output/2013/NAT/HadGEM2-ES' and ''' 
     # define MF metadata namespace containing metadata documents
     namespace = "weather_at_home"
@@ -109,8 +113,16 @@ def build_query(kwargs):
             meta_doc = "drs_meta"
         else:
             meta_doc = "experiment_description"
-        value=str(v)
-        query += namespace + ":" + meta_doc + "/" + k + "=" + "'" + value + "' and "
+        if type(v) == str:
+            query += namespace + ":" + meta_doc + "/" + k + "='" + v + "' and "
+        elif type(v) == bool:
+            query += namespace + ":" + meta_doc + "/" + k + "=" + str(v) + " and "
+        elif type(v) == list:
+            query += "("
+            for value in v:
+                query += \
+                namespace + ":" + meta_doc + "/" + k + "='" + value + "' or "
+            query = query[:-4] + ") and "
    # xpath(weather_at_home:drs_meta/volunteer)
     # return query without last for characters so we don't return the last "and "
     print(query)
@@ -143,7 +155,7 @@ def tds_connect():
 def main():
     ''' '''
     # parse input arguments 
-    query_args, bool_args, out_args, admin = assign_constraints()
+    query_args, out_args, admin = assign_constraints()
     # if user wants to print metadata definition, print and exit 
     if out_args['print_meta']: 
         print_meta(drs_meta)
@@ -162,17 +174,8 @@ def main():
     # get possible combinations of 'year' and 'sst'
     # build one query for each of the year/sst combinations 
     print(query_args)
-    print(bool_args)
 
-    combs=combine_constraints(**query_args)
-    
-    print(combs)
-    for constraints in combs:
-        print(constraints.update(bool_args))
-        query = build_query(constraints)
-        # query mediaflux
-        result_dict = query_mf(query,template)
-        print(result_dict)
+
     # do something with result!
     # open file?
     if opendap or ncss:

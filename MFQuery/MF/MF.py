@@ -46,20 +46,21 @@ class Session(object):
 #       proc = subprocess.Popen(shlex.split(script), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         proc = subprocess.Popen(script, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = proc.communicate()
-        stdout = stdout.rstrip("\n")
-        stderr = stderr.rstrip("\n")
+        stdout = stdout.decode('utf8').replace("\n","")
+        stderr = stderr.decode('utf8').replace("\n","")
+        print(stderr)
 # CURRENT - JAVA prints "Picking up env var crap" here to stderr ...
 # so we cannot use the existence of stderr as an indication of a problem - must fall to the parsing of stdout
-        if (stderr):
-                log("DEBUG", stderr)
+        if (stderr != ""):
+                #log("DEBUG", stderr)
                 if not "JAVA" in stderr:
                         raise Exception("Process execution failed.")
         return stdout
 
-        def parse_response(self, response):
-            ''' parse response returned by server to a dictionary '''
-            resp_dict=response
-            return resp_dict
+    def parse_response(self, response):
+        ''' parse response returned by server to a dictionary '''
+        resp_dict=response
+        return resp_dict
 
 def actions(value):
     ''' attach an :action to a query before execution '''
