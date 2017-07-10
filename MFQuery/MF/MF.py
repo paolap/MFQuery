@@ -75,10 +75,10 @@ def connect(cfg = None , jar = None):
 
     Example::
 
-    >>> from MFQuery import WatH
+    >>> from MFQuery.MF import MF
     >>> cfg = "$HOME/aterm.cfg"
     >>> jar = "$HOME/aterm.jar"
-    >>> wath   = WatH.MF.connect(cfg,jar) # doctest: +SKIP
+    >>> wath   = MF.connect(cfg,jar) # doctest: +SKIP
     >>> outputs = wath.query() # doctest: +SKIP
     """
 

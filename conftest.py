@@ -2,7 +2,7 @@ import pytest
 import sys
 
 # Make session fixture available to doctests
-from tests.WatH.db_fixture import session
+#from tests.MF.MF import session
 
 collect_ignore = ["setup.py", "docs/conf.py"]
 

@@ -18,34 +18,27 @@ from __future__ import print_function
 
 import itertools
 
-def combine_constraints(**kwargs):
-    ''' Works out any possible combination given lists of constraints
-        :argument dictionary, keys are fields and values are lists of values for each field
-        :return: a set of dictionaries, one for each constraints combination i
-    '''
-    try:
-        return [dict(itertools.izip(kwargs, x)) for x in itertools.product(*kwargs.itervalues())]
-    except:
-        return [dict(zip(kwargs, x)) for x in itertools.product(*kwargs.values())]
-
 
 def print_meta(meta_dict):
     ''' print a metadata document dictionary in a readable form '''
-    for k,v in meta_dict.items():
+    for k,v in sorted(meta_dict.items()):
         print()
         print (k)
-        print ('type: ',v[0])
-        print ('summary: ',v[1])
+        print ('type:', v[0])
+        print ('summary:', v[1])
+        print ('document:', v[2])
     return
 
 
-def meta_arguments(args_list):
+def meta_arguments(args_list, meta_dict):
     ''' gets a list of metadata arguments as [arg1, value1, arg2, value2, arg3, value3] '''
     args_dict = {}
+    for i in range(0, len(args_list),2):
+        args_dict[args_list[i]] = args_list[i+1]
     # use eval_bool function to assign correct type to boolean values
-    args = [ eval_bool(i) for i in args_list]
-    for i in range(0,len(args),2):
-        args_dict[args[i]] = args[i+1]
+    for k,v in args_dict.items():
+        if meta_dict[k][0] == 'bool': args_dict[k] = eval_bool(v)
+
     return args_dict
 
 

@@ -27,7 +27,7 @@ from siphon.ncss import NCSS
 from MFQuery.MF.helpers import *
 import MFQuery.MF.MF as MF  
 # import the dictionaries describing the metadata associated with the directory structure and the experiment
-from MFQuery.data import drs_meta, experiment_meta
+from MFQuery.data import wath_meta
 
 
 def parse_input():
@@ -54,7 +54,7 @@ def parse_input():
             The additional arguments replica, node and project modify the main ESGF search parameters. Defaults are
             no replicas, PCMDI node and CMIP5 project. If you chnage project you need to export a different local database,
                ''',formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument('-y','--year', type=str, nargs="*", help='Year indicating experiment', required=True)
+    parser.add_argument('-y','--year', type=str, nargs="*", help='Year indicating experiment', required=False)
     parser.add_argument('-s','--sst', type=str, nargs="*", help='CMIP5 model used to calculate delta-sst'+
            ' Can be "None"', required=False)
     parser.add_argument('-f','--forcing', type=str, help='NAT or ALL forcing', required=False)
@@ -69,26 +69,27 @@ def parse_input():
     parser.add_argument('-k','--output_kind', type=str, nargs="*", help='pcl, pdl or pel', required=False)
     parser.add_argument('-pm','--print_meta', help='print metadata documents and exit', action='store_true', required=False)
     parser.add_argument('-a','--admin', action='store_true', help='running script as admin', required=False)
-    return vars(parser.parse_args())
+    args = parser.parse_args()
+    if not args.print_meta:
+        if args.year is None:
+            parser.error('Argument year  -y/--year is required to query the data')
+    else:
+        return vars(args)
 
 
 def assign_constraints():
     ''' Assign default values and input to constraints '''
     kwargs = parse_input()
+    # if print_meta option True print metadata definitions and exit
+    if kwargs['print_meta']:
+        print_meta(wath_meta)
+        sys.exit()
     admin =  kwargs.pop("admin")
-    # collect all input arguments related to output format in separate dictionary
-    out_args={}
-    out_args['opendap'] = kwargs.pop("opendap")
-    out_args['ncss'] = kwargs.pop("ncss")
-    out_args['variable'] = kwargs.pop("variable")
-    out_args['output_kind'] = kwargs.pop("output_kind")
-    out_args['download'] = kwargs.pop("download")
-    out_args['download_path'] = kwargs.pop("download_path")
-    out_args['print_meta'] = kwargs.pop("print_meta")
-    # collect all boolean arguments separately
-    extra_args = meta_arguments(kwargs.pop("meta"))
+    out_args, kwargs = output_args(kwargs)
+    # build separate boolean arguments from meta option
+    extra_args = meta_arguments(kwargs.pop("meta"), wath_meta)
     kwargs.update(extra_args)
-    # if sst and year have only one value eliminate list
+    # if sst and year have only one value convert list to string
     for k in ['sst','year']:
         if len(kwargs[k]) == 1 : kwargs[k] = kwargs[k][0]  
     # copy remaining arguments and eliminate the ones which are empty or None
@@ -97,22 +98,32 @@ def assign_constraints():
     return kwargs, out_args, admin
 
 
+def output_args(kwargs):
+    ''' collect all input arguments related to output format in separate dictionary '''
+    args={}
+    args['opendap'] = kwargs.pop("opendap")
+    args['ncss'] = kwargs.pop("ncss")
+    args['variable'] = kwargs.pop("variable")
+    args['output_kind'] = kwargs.pop("output_kind")
+    args['download'] = kwargs.pop("download")
+    args['download_path'] = kwargs.pop("download_path")
+    return args, kwargs
+
+
 def query_mf(query,template):
     ''' query mediaflux using input arguments and selected output template '''
     results={}
     return results
 
+
 def build_query(kwargs):
     ''' build bulk of query string based on input arguments '''
     print(kwargs)
-    query = '''asset.query :where "namespace>='/WatH-Test/model_output/2013/NAT/HadGEM2-ES' and ''' 
+    query = '''asset.query :where "namespace>='/WatH-Test/model_output2/' and '''
     # define MF metadata namespace containing metadata documents
     namespace = "weather_at_home"
     for k,v in kwargs.items():
-        if k in drs_meta.keys():
-            meta_doc = "drs_meta"
-        else:
-            meta_doc = "experiment_description"
+        meta_doc = wath_meta[k][2]
         if type(v) == str:
             query += namespace + ":" + meta_doc + "/" + k + "='" + v + "' and "
         elif type(v) == bool:
@@ -140,7 +151,7 @@ def process_output():
     base = ( '''asset.query :where "namespace>=/WatH-Test/model_output2 '''
              '''and type='application/x-netcdf' and QUERY ''' 
              ''' :action get-distinct-values ''' )
-    thredds_out = ( ''' :xpath -ename url string.format('https://http://144.6.229.249/thredds/catalog/my/test/all2%s?','''
+    thredds_out = ( ''' :xpath -ename url string.format('https://http://144.6.229.249/thredds/catalog/aggregated%s?','''
                      ''',replace(xvalue('namespace'),'/WatH-Test/model_output2',''))''' )
     base2 =  ''' curl --insecure -X POST -H 'Content-Type: text/xml; charset=utf-8' -d '<request><service name="asset.query" session="15bf0af565bbGXRL1cTxXXoqHKmlwXfGBUNZGo69yLk"><args><where>namespace>=/WatH-Test/model_output2 and type='application/x-netcdf' and (YOUR_QUERY)</where><action>get-distinct-values</action><xpath name="url">string.format('https://thredds.com.au%s?',replace(xvalue('namespace'),'/WatH-Test/model_output2',''))</xpath></args></service></request>' 'https://livearc-00.tpac.org.au/__mflux_svc__' " '''
     return base
@@ -148,7 +159,7 @@ def process_output():
 
 def tds_connect():
     ''' open connection to thredds catalog, return datasets list '''
-    cat = TDSCatalog('http://144.6.229.249/thredds/catalog/wath2/2012/NAT/HadGEM2-ES/dir001/p2ofga/catalog.xml')
+    cat = TDSCatalog('http://144.6.229.249/thredds/catalog/aggregated/catalog.xml')
     return list(cat.datasets.values())
 
 
@@ -156,11 +167,6 @@ def main():
     ''' '''
     # parse input arguments 
     query_args, out_args, admin = assign_constraints()
-    # if user wants to print metadata definition, print and exit 
-    if out_args['print_meta']: 
-        print_meta(drs_meta)
-        print_meta(experiment_meta)
-        sys.exit()
     print(out_args)
     # establish session 
     session = MF.connect()
