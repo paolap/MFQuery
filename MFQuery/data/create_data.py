@@ -22,41 +22,41 @@ from __future__ import print_function
 import pickle
 
 # experiment_description metadata
-wath_meta = { 'year': ['string', 'Name of W@h experiment', 'experiment_meta'],
+wath_meta = { 'year': ['string', 'Name of W@h experiment', 'experiment_description'],
   'umid_range/min': ['string', 'Minimum of umid-range: range of possible umids associated to the experiment, '+
                      'alphabetical order is first ascii_lowercase then digits. ' +
-                     'The umid of any simulations for a given experiment falls into this range', 'experiment_meta'],
+                     'The umid of any simulations for a given experiment falls into this range', 'experiment_description'],
   'umid_range/max': ['string', 'Maximum of umid-range: range of possible umids associated to the experiment, ' +
                      'alphabetical order is first ascii_lowercase then digits. The umid of any simulations for a ' +
-                     'given experiment falls into this range', 'experiment_meta'],
- 'runs_number': ['integer', 'number of simulations created for the experiment', 'experiment_meta'],
- 'created_on': ['string', 'Date when experiment simulations executables were created', 'experiment_meta'],
- 'restart_file': ['string', 'umid of restart file', 'experiment_meta'],
- 'batch': ['string', 'batch number followed by sub-batch if present', 'experiment_meta'],
- 'forcing': ['string', 'If experiment uses "all forcing" (all) or only natural forcing (NAT)', 'experiment_meta'],
+                     'given experiment falls into this range', 'experiment_description'],
+ 'runs_number': ['integer', 'number of simulations created for the experiment', 'experiment_description'],
+ 'created_on': ['string', 'Date when experiment simulations executables were created', 'experiment_description'],
+ 'restart_file': ['string', 'umid of restart file', 'experiment_description'],
+ 'batch': ['string', 'batch number followed by sub-batch if present', 'experiment_description'],
+ 'forcing': ['string', 'If experiment uses "all forcing" (all) or only natural forcing (NAT)', 'experiment_description'],
  'sst': ['string', 'Indicates if and how the sea surface temperature (SST) for that year obtained from ostia dataset' +
        'has been modified by subtracting a delta representing human contribution in natural forcing only simualtions.' +
-       'If a delta has been added then list the general circulation model used to calculate it.', 'experiment_meta'],
+       'If a delta has been added then list the general circulation model used to calculate it.', 'experiment_description'],
  'ozone': ['string', 'If ozone hole forcing has been used in the simulation: can be "all forcing ozone" or "NAT ozone"',
-           'experiment_meta'],
- 'ENSO':  ['string', 'ElNino indicate if experiment is an El Nino , La Nina or Neutral year', 'experiment_meta'],
- 'ghg': ['boolean', 'If greenhouse gases (GHG) forcing is present or not', 'experiment_meta'],
- 'spin_up': ['boolean', 'If experiment is a suite of spin_up simulations', 'experiment_meta'],
+           'experiment_description'],
+ 'ENSO':  ['string', 'ElNino indicate if experiment is an El Nino , La Nina or Neutral year', 'experiment_description'],
+ 'ghg': ['boolean', 'If greenhouse gases (GHG) forcing is present or not', 'experiment_description'],
+ 'spin_up': ['boolean', 'If experiment is a suite of spin_up simulations', 'experiment_description'],
  'perturbed': ['boolean', 'If SST has been perturbed. For each SST-scenario there are about 6 thousands simulations ' +
                'each with a different perturbation of potential temperature in the atmosphere. The perturbations ' +
-               'are generated as a random number using a small range of values.', 'experiment_meta'],
- 'wind_rh': ['boolean', 'If wind_rh is present', 'experiment_meta'],
- 'ffdi': ['boolean', 'If FFDI fire index is present', 'experiment_meta'],
- 'stash': ['boolean', 'If stash', 'experiment_meta'],
+               'are generated as a random number using a small range of values.', 'experiment_description'],
+ 'wind_rh': ['boolean', 'If wind_rh is present', 'experiment_description'],
+ 'ffdi': ['boolean', 'If FFDI fire index is present', 'experiment_description'],
+ 'stash': ['boolean', 'If stash', 'experiment_description'],
  'xml_file': ['url', 'url pointing to a github repository of the xml_files containing the simulation code ' +
               'Ex. https://github.com/MitchellBlack/weatherathome/blob/4912c31057075e96720e5fd3abe9f8aba7488a5e/' +
-              'xml_codes.dir/xml_anz.dir/archive.dir/wu_HadAM3P_ANZ_NIWA_n826_n9ei_MPI-ESM-P.xml', 'experiment_meta'],
+              'xml_codes.dir/xml_anz.dir/archive.dir/wu_HadAM3P_ANZ_NIWA_n826_n9ei_MPI-ESM-P.xml', 'experiment_description'],
  'description': ['string', 'This collate all the textual descriptions and comments fields relating to the experiment',
-                 'experiment_meta'],
- 'dynamics': ['string', 'Dynamics template used to set up simulations for experiment', 'experiment_meta'],
- 'experiment_id': ['integer', 'ID of experiment in original metadata database', 'experiment_meta'],
- 'creator': ['string', 'The person who generated the experiment', 'experiment_meta'],
- 'creator_email': ['email-address', 'e-mail of the experiment creator', 'experiment_meta'],
+                 'experiment_description'],
+ 'dynamics': ['string', 'Dynamics template used to set up simulations for experiment', 'experiment_description'],
+ 'experiment_id': ['integer', 'ID of experiment in original metadata database', 'experiment_description'],
+ 'creator': ['string', 'The person who generated the experiment', 'experiment_description'],
+ 'creator_email': ['email-address', 'e-mail of the experiment creator', 'experiment_description'],
 # drs_meta metadata
  'umid': ['string', 'Model simulation id indicating the experiment. Umid are unique in one experiment context',
           'drs_meta'],
@@ -66,5 +66,5 @@ wath_meta = { 'year': ['string', 'Name of W@h experiment', 'experiment_meta'],
                'directory grouping them', 'drs_meta'] }
 # save dictionary in pickle file
 f=open("meta_doc_pickle","wb")
-pickle.dump( wath_meta, f )
+pickle.dump( wath_meta, f, protocol=2 )
 f.close()

@@ -69,13 +69,13 @@ def parse_input():
                                        action='store_true', required=False)
     parser.add_argument('-v','--variable', type=str, nargs="*", help='variable', required=False)
     parser.add_argument('-k','--output_kind', type=str, nargs="*", help='pcl, pdl or pel', required=False)
-    parser.add_argument('-pm','--print_meta', help='print metadata documents and exit', action='store_true',
-                                              required=False, default=False)
+    parser.add_argument('-pm','--print_meta', help='print metadata documents and exit', required=False,
+                        action='store_true')
     parser.add_argument('-a','--admin', action='store_true', help='running script as admin', required=False)
     args = parser.parse_args()
-    if not args.print_meta:
-        if args.year is None:
-            parser.error('Argument year  -y/--year is required to query the data')
+    print(args)
+    if not args.print_meta and args.year is None:
+        parser.error('Argument year  -y/--year is required to query the data')
     else:
         return vars(args)
 
@@ -83,8 +83,9 @@ def parse_input():
 def assign_constraints():
     ''' Assign default values and input to constraints '''
     kwargs = parse_input()
+    print(kwargs)
     # if print_meta option True print metadata definitions and exit
-    if kwargs['print_meta']:
+    if kwargs.pop('print_meta'):
         print_meta(wath_meta)
         sys.exit()
     admin =  kwargs.pop("admin")
