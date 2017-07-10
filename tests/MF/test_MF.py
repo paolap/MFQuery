@@ -24,3 +24,8 @@ def test_connect(aterm_files):
     s = mf.connect(cfg=aterm_files[0], jar=aterm_files[1])
     assert s.cfg_file == '/User/tizio/aterm.cfg'
     assert s.jar_file == '/User/tizio/aterm.jar'
+
+
+def test_actions():
+    assert mf.actions('value') == ' :action value'
+

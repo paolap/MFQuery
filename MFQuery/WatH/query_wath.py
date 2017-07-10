@@ -62,12 +62,16 @@ def parse_input():
                         help='''generic metadata argument: -m/--meta argument-name argument value
                         for a full list of available metadata use the -pm flag''', required=False)
     parser.add_argument('-d','--download', help='download files returned by query', action='store_true', required=False)
-    parser.add_argument('-p','--download_path', type=str, help='Define local path where to download files, if not defined will use current path', required=False)
-    parser.add_argument('-o','--opendap', help='print thredds opendap urls for files returned by query', action='store_true', required=False)
-    parser.add_argument('-n','--ncss', help='print thredds netcdf subset service urls for files returned by query', action='store_true', required=False)
+    parser.add_argument('-p','--download_path', type=str, help='Define local path where to download files,' +
+                                                'if not defined will use current path', required=False)
+    parser.add_argument('-o','--opendap', help='print thredds opendap urls for files returned by query',
+                                          action='store_true', required=False)
+    parser.add_argument('-n','--ncss', help='print thredds netcdf subset service urls for files returned by query',
+                                       action='store_true', required=False)
     parser.add_argument('-v','--variable', type=str, nargs="*", help='variable', required=False)
     parser.add_argument('-k','--output_kind', type=str, nargs="*", help='pcl, pdl or pel', required=False)
-    parser.add_argument('-pm','--print_meta', help='print metadata documents and exit', action='store_true', required=False)
+    parser.add_argument('-pm','--print_meta', help='print metadata documents and exit', action='store_true',
+                                              required=False)
     parser.add_argument('-a','--admin', action='store_true', help='running script as admin', required=False)
     args = parser.parse_args()
     if not args.print_meta:
@@ -140,11 +144,12 @@ def build_query(kwargs):
     return query[:-4]+ '"'
 
 
-def build_action(out_args):
-    ''' build action to perform on results returned by query '''
-    opendap_urls = ''' :action get-distinct-values :xpath -ename url string.format('https://thredds.com.au%s?',replace(xvalue('namespace'),'/WatH-Test/model_output2','')) '''
-    download_urls = ''' :action get-distinct-values :xpath -ename '''
-    count = ''' :action count '''
+#def build_action(out_args):
+#    ''' build action to perform on results returned by query '''
+#    opendap_urls = ''' :action get-distinct-values :xpath -ename url string.format('https://thredds.com.au%s?',''' +
+#                   '''replace(xvalue('namespace'),'/WatH-Test/model_output2','')) '''
+#    download_urls = ''' :action get-distinct-values :xpath -ename '''
+#    count = ''' :action count '''
 
 
 def process_output():
@@ -153,7 +158,12 @@ def process_output():
              ''' :action get-distinct-values ''' )
     thredds_out = ( ''' :xpath -ename url string.format('https://http://144.6.229.249/thredds/catalog/aggregated%s?','''
                      ''',replace(xvalue('namespace'),'/WatH-Test/model_output2',''))''' )
-    base2 =  ''' curl --insecure -X POST -H 'Content-Type: text/xml; charset=utf-8' -d '<request><service name="asset.query" session="15bf0af565bbGXRL1cTxXXoqHKmlwXfGBUNZGo69yLk"><args><where>namespace>=/WatH-Test/model_output2 and type='application/x-netcdf' and (YOUR_QUERY)</where><action>get-distinct-values</action><xpath name="url">string.format('https://thredds.com.au%s?',replace(xvalue('namespace'),'/WatH-Test/model_output2',''))</xpath></args></service></request>' 'https://livearc-00.tpac.org.au/__mflux_svc__' " '''
+    base2 =  ''' curl --insecure -X POST -H 'Content-Type: text/xml; charset=utf-8' -d ' ''' +
+             '''<request><service name="asset.query" session="15bf0af565bbGXRL1cTxXXoqHKmlwXfGBUNZGo69yLk"><args>''' +
+             '''<where>namespace>=/WatH-Test/model_output2 and type='application/x-netcdf' and (YOUR_QUERY)''' +
+             '''</where><action>get-distinct-values</action><xpath name="url">string.format''' +
+             '''('https://thredds.com.au%s?',replace(xvalue('namespace'),'/WatH-Test/model_output2',''))''' +
+             '''</xpath></args></service></request>' 'https://livearc-00.tpac.org.au/__mflux_svc__' " '''
     return base
 
 

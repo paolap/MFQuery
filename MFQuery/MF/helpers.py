@@ -16,8 +16,6 @@ limitations under the License.
 
 from __future__ import print_function
 
-import itertools
-
 
 def print_meta(meta_dict):
     ''' print a metadata document dictionary in a readable form '''
