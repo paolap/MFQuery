@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 from __future__ import print_function
+import sys
 
 
 def print_meta(meta_dict):
@@ -42,9 +43,10 @@ def meta_arguments(args_list, meta_dict):
 
 def eval_bool(bool_str):
     ''' Get a string if represents a boolean convert it to bool type '''
-    if bool_str in ["1","T", "True","true","Y","y","yes","Yes","YES","TRUE"]:
+    if bool_str.lower() in ["1","t","true","y","yes"]:
         return True
-    elif bool_str in ["0","F", "False","false","N","n","no","No","NO","FALSE"]:
+    elif bool_str.lower() in ["0","f", "false", "n","no"]:
         return False
     else:
-        return bool_str
+        print('Boolean value expected, found ', bool_str)
+        sys.exit()

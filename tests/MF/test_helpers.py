@@ -15,6 +15,7 @@ limitations under the License.
 
 import MFQuery.MF.helpers as helpers
 from tests.MF.mf_fixtures import metadata, args_list
+import pytest
 
 
 def test_print_meta(capfd,metadata):
@@ -50,8 +51,12 @@ def test_meta_arguments(args_list, metadata):
                     'meta4': '987' }
 
 
-def test_eval_bool():
+def test_eval_bool(capsys):
     assert helpers.eval_bool('T') == True
     assert helpers.eval_bool('0') == False
-    assert helpers.eval_bool('True') == True
+    assert helpers.eval_bool('TrUe') == True
     assert helpers.eval_bool('NO') == False
+    with pytest.raises(SystemExit):
+        helpers.eval_bool('notincluded')
+        out, err = capsys.readouterr()
+        assert out=='Boolean value expected, found notincluded'

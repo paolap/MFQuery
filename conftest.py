@@ -4,7 +4,7 @@ import sys
 # Make session fixture available to doctests
 #from tests.MF.MF import session
 
-collect_ignore = ["setup.py", "docs/conf.py"]
+collect_ignore = ["setup.py", "docs/conf.py", "MFQuery/WatH/query_wath.py"]
 
 # Pyesgf doesn't work with python 3
 #if sys.version_info >= (3,0):
