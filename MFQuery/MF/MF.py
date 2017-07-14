@@ -17,6 +17,7 @@ from __future__ import print_function, absolute_import
 
 import os
 import subprocess
+from MFQuery.MF.helpers import res_list, res_dict
 
 
 class Session(object):
@@ -52,16 +53,21 @@ class Session(object):
         print(stderr)
 # CURRENT - JAVA prints "Picking up env var crap" here to stderr ...
 # so we cannot use the existence of stderr as an indication of a problem - must fall to the parsing of stdout
-        if (stderr != ""):
-                #log("DEBUG", stderr)
+        if stderr != "":
+#log("DEBUG", stderr)
                 if not "JAVA" in stderr:
                         raise Exception("Process execution failed.")
         return stdout
 
     def parse_response(self, response):
         ''' parse response returned by server to a dictionary '''
-        resp_dict=response
-        return resp_dict
+# first break string where whitespaces, then create json
+# elements start with ":"
+# attributes start with "-"
+# values are surrounded by double quotes
+        response_list = res_list(response)
+        response_dict = res_dict(response_list)
+        return response_dict
 
 def actions(value):
     ''' attach an :action to a query before execution '''

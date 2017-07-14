@@ -60,3 +60,37 @@ def test_eval_bool(capsys):
         helpers.eval_bool('notincluded')
         out, err = capsys.readouterr()
         assert out=='Boolean value expected, found notincluded'
+
+
+def test_res_list():
+    res = ''':key1 -sub1 val1 :key2 "val2" "val3" '''
+    assert helpers.res_list(res) == [("key1", "key"), ("sub1","subkey"), ("val1","value"),
+                             ("key2", "key"), ("val2", "value"), ("val3", "value")]
+
+
+def test_res_dict():
+    # one key with one value
+    key_value = [("key1", "key"), ("val1", "value")]
+    assert helpers.res_dict(key_value) == {"key1": ["val1"]}
+    # one key with more than one value
+    key_values = [("key1", "key"), ("val1", "value"), ("val2", "value")]
+    assert helpers.res_dict(key_values) == {"key1": ["val1", "val2"]}
+    # more than one key with 1 value each
+    keys_value = [("key1", "key"), ("val1", "value"), ("key2", "key"), ("val2", "value")]
+    assert helpers.res_dict(keys_value) == {"key1": ["val1"], "key2": ["val2"]}
+    # more than one key with more than one value
+    keys_values = [("key1", "key"), ("val1", "value"), ("val3", "value"),
+                   ("key2", "key"), ("val2", "value"), ("val4", "value")]
+    assert helpers.res_dict(keys_values) == {"key1": ["val1", "val3"], "key2": ["val2", "val4"]}
+    # one key with one subkey with one value
+    key_subkey_value = [("key1", "key"), ("sub1", "subkey"), ("val1", "value")]
+    assert helpers.res_dict(key_subkey_value) == {"key1": [{"sub1": ["val1"]}]}
+    # more than one key with one subkey with one value
+    keys_subkey_value = [("key1", "key"), ("sub1", "subkey"), ("val1", "value"),
+                         ("key2", "key"), ("sub2", "subkey"), ("val2", "value")]
+    assert helpers.res_dict(keys_subkey_value) == {"key1": [{"sub1": ["val1"]}],
+                                                   "key2": [{"sub2": ["val2"]}]}
+    # complex combination
+    res_list = [("key1", "key"), ("sub1", "subkey"), ("val1", "value"),
+                  ("key2", "key"), ("val2", "value"), ("val3", "value")]
+    assert helpers.res_dict(res_list) == {"key1": [{"sub1": ["val1"]}], "key2": ["val2", "val3"] }
