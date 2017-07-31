@@ -22,6 +22,11 @@ def aterm_files():
     jar_path = '/User/tizio/aterm.jar'
     return (cfg_path, jar_path)
 
+@pytest.fixture(scope="module")
+def cmd():
+    cmd = "some command"
+    return cmd
+
 
 @pytest.fixture(scope="module")
 def metadata():
@@ -38,3 +43,16 @@ def args_list():
     args_list = ['meta1', 'True', 'meta2', '1', 'meta3', 'F', 'meta4', '987']
     return args_list
 
+
+@pytest.fixture(scope="module")
+def res():
+    res = ''':key1 "val1" 
+             :key2 -sub2 "val2" "val3" '''
+    return res
+
+@pytest.fixture(scope="module")
+def res_list():
+    res_list = [ [{'value': [{'nbe': '144'}, '144']}],
+                 [{'id': [{'version': '2'}, 'a']}, {'id': [{'version': '2'}, 'b']}, {'id': [{'version': '3'}, 'c']}],
+                 [{'url': [{'nbe': '36'}, 'd']}, {'url': [{'nbe': '36'}, 'e']}, {'url': [{'nbe': '36'}, 'f']}] ]
+    return res_list

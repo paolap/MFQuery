@@ -14,7 +14,7 @@ limitations under the License.
 """
 
 import MFQuery.MF.MF as mf
-from tests.MF.mf_fixtures import aterm_files
+from tests.MF.mf_fixtures import aterm_files, cmd, res, res_list
 
 
 def test_connect(aterm_files):
@@ -26,6 +26,26 @@ def test_connect(aterm_files):
     assert s.jar_file == '/User/tizio/aterm.jar'
 
 
-def test_actions():
-    assert mf.actions('value') == ' :action value'
+def test_wrapper(cmd):
+    s = mf.connect(cfg="aterm.cfg", jar="aterm.jar")
+    assert s.wrapper(cmd) == 'java -Dmf.cfg=aterm.cfg -jar aterm.jar nogui some command '
 
+
+def test_parse_response(res):
+    s = mf.connect()
+    assert s.parse_response(res) == [{"key1": ["val1"]}, {"key2": [{"sub2": "val2"}, "val3"]} ]
+
+
+def test_response(res_list):
+    s = mf.connect()
+    assert s.response(res_list[0], 'count') == '144'
+    assert s.response(res_list[1], '') == ['a', 'b', 'c']
+    assert s.response(res_list[2], 'get-distinct-values') == ['d', 'e', 'f']
+
+
+def test_execute():
+    assert 1
+
+
+def test_query():
+    assert 1

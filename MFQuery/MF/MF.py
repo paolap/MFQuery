@@ -28,8 +28,13 @@ class Session(object):
         self.jar_file = jar_file 
         return self
 
-    def query(self, squery):
-        ''' execute query passed as input '''
+    def query(self, squery, action=""):
+        '''
+         :param squery: a query string
+         :param action: an action to execute with the query results, default to showing returned assets
+         :return server response after executing query '''
+        if action != "":
+            squery += ' :action ' + action
         script = self.wrapper(squery)
         out = self.execute(script)
         result = self.parse_response(out)
@@ -69,11 +74,22 @@ class Session(object):
         response_dict = res_dict(response_list)
         return response_dict
 
-def actions(value):
-    ''' attach an :action to a query before execution '''
-    action = ' :action ' + value
-    return action
 
+    def response(self, response_dict, action):
+        '''
+        :param response_dict: dictionary with parsed MF server response
+        :param action: a string representing the action executed by the MF server
+        :return: response: depending on server action return a simplified version of response
+                 if 'count' returns number of results
+                 if '' returns a list with assets
+                 if 'get-distinct-values' returns list with distinct assets urls
+        '''
+        action_dict={'count': 'value',
+                     '': 'id',
+                     'get-distinct-values': 'url'}
+        response = [x for y in response_dict for x in y[action_dict[action]]  if type(x) is str]
+        if len(response) == 1: return response[0]
+        return response
 
 def connect(cfg = None , jar = None):
     """ Connect to MF using a token with authority to access the data collection

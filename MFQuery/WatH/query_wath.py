@@ -182,11 +182,11 @@ def main():
     session = MF.connect()
     # build query and then call MF.query to execute
     squery = build_query(query_args)
-    #action = MF.actions('count')
-    saction = '''get-distinct-values :xpath -name "path" xvalue('namespace')'''
-    action = MF.actions(saction)
-    output = session.query(squery+action)
-    print(output)
+    #saction = ""
+    saction = 'count'
+    #saction = '''get-distinct-values :xpath -name "path" xvalue('namespace')'''
+    output = session.query(squery,action=saction)
+    print(session.response(output,saction))
     # get possible combinations of 'year' and 'sst'
     # build one query for each of the year/sst combinations
     sys.exit()
