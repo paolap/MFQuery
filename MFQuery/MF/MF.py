@@ -21,19 +21,23 @@ from MFQuery.MF.helpers import res_list, res_dict
 
 
 class Session(object):
-
-    def open(self, cfg_file, jar_file):
-        ''' open a Mediaflux session using the token '''
+    def __init__(self, cfg_file, jar_file):
+        """
+         :param cfg_file: configuration file for aterm shell
+         :param jar_file: java executable for aterm shell
+         :return an instance of Mediaflux session that uses the token defined in aterm.cfg
+          """
         self.cfg_file = cfg_file
-        self.jar_file = jar_file 
-        return self
+        self.jar_file = jar_file
 
     def query(self, squery, action=""):
-        '''
+        """
          :param squery: a query string
          :param action: an action to execute with the query results, default to showing returned assets
-         :return server response after executing query '''
-        if action == "" or action is None : action = 'count'
+         :return server response after executing query
+         """
+        if action == "" or action is None:
+            action = 'count'
         squery += ' :action ' + action
         script = self.wrapper(squery)
         out = self.execute(script)
@@ -41,74 +45,82 @@ class Session(object):
         return result
 
     def wrapper(self, cmd):
-        ''' create a java script wrapper for query command '''
+        """
+         :param cmd: command string to execute in aterm shell
+         :return script: a java script wrapper for aterm shell command
+         """
         script = 'java -Dmf.cfg={0} -jar {1} nogui {2} '.format(self.cfg_file, self.jar_file, cmd)
         return script
 
-    def execute(self,script):
-        ''' execute java script '''
+    def execute(self, script):
+        """
+         :param script: java script wrapping aterm shell command
+         :returns stdout: standard output of java script execution
+         """
         print("exec: {0}".format(script))
-# CURRENT - for security reasons, shell=True should not be set
-# CURRENT - the shlex approach works on unix, but not on windows ...
-#       proc = subprocess.Popen(shlex.split(script), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # CURRENT - for security reasons, shell=True should not be set
+        # CURRENT - the shlex approach works on unix, but not on windows ...
+        #proc = subprocess.Popen(shlex.split(script), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         proc = subprocess.Popen(script, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = proc.communicate()
-        stdout = stdout.decode('utf8').replace("\n","")
-        stderr = stderr.decode('utf8').replace("\n","")
+        stdout = stdout.decode('utf8').replace("\n", "")
+        stderr = stderr.decode('utf8').replace("\n", "")
         print(stderr)
-# CURRENT - JAVA prints "Picking up env var crap" here to stderr ...
-# so we cannot use the existence of stderr as an indication of a problem - must fall to the parsing of stdout
+        # CURRENT - JAVA prints "Picking up env var crap" here to stderr ...
+        # so we cannot use the existence of stderr as an indication of a problem - must fall to the parsing of stdout
         if stderr != "":
-#log("DEBUG", stderr)
-                if not "JAVA" in stderr:
-                        raise Exception("Process execution failed.")
+            #log("DEBUG", stderr)
+            if "JAVA" not in stderr:
+                raise Exception("Process execution failed.")
         return stdout
 
     def parse_response(self, response):
-        ''' parse response returned by server to a dictionary '''
-# first break string where whitespaces, then create json
-# elements start with ":"
-# attributes start with "-"
-# values are surrounded by double quotes
+        """
+        :param response returned by MF server
+        :return: response_dict: server response as dictionary
+        """
+        # first break string where whitespaces, then create json
+        # elements start with ":"
+        # attributes start with "-"
+        # values are surrounded by double quotes
         response_list = res_list(response)
         response_dict = res_dict(response_list)
         return response_dict
 
-
     def response(self, response_dict, action):
-        '''
+        """
         :param response_dict: dictionary with parsed MF server response
         :param action: a string representing the action executed by the MF server
         :return: response: depending on server action return a simplified version of response
                  if 'count' returns number of results
                  if '' returns a list with assets
                  if 'get-distinct-values' returns list with distinct assets urls
-        '''
-        kaction=action.split(" ")[0]
-        xvalue=""
+        """
+        kaction = action.split(" ")[0]
+        xvalue = ""
         if kaction in ['get-value', 'get-distinct-values', 'get-values']:
             xvalue = action.split("-ename ")[1].split(" ")[0]
-        action_dict={'count': 'value',
-                     'get-id': 'id',
-                     'get-distinct-values': 'url',
-                     'get-name': 'name',
-                     'get-path':  'path',
-                     'get-value': xvalue,
-                     'get-values': xvalue,
-                     'get-distinct-values': xvalue}
-        #  get - value, get - values, get - distinct - values, get - content, get - geo - shape,
+        action_dict = {'count': 'value',
+                       'get-id': 'id',
+                       'get-name': 'name',
+                       'get-path': 'path',
+                       'get-value': xvalue,
+                       'get-values': xvalue,
+                       'get-distinct-values': xvalue}
+        #   get - content, get - geo - shape,
         # get - geo - histogram, get - transformed, get - content - status - statistics, get - all, pipe, sum, min, max,
         # avg]
         # probably shouldn't be included: get-cid, get-rid, get-path
         # can be included but complex: get-meta, get-template-meta (can't see difference yet), get-extended-meta
-        # get-value
         key = action_dict[kaction]
-        subdict = [y for y in response_dict if key in y.keys() ]
-        response = [x for y in subdict for x in y[key]  if type(x) is str]
-        if len(response) == 1: return response[0]
+        subdict = [y for y in response_dict if key in y.keys()]
+        response = [x for y in subdict for x in y[key] if type(x) is str]
+        if len(response) == 1:
+            return response[0]
         return response
 
-def connect(cfg = None , jar = None):
+
+def connect(cfg=None, jar=None):
     """ Connect to MF using a token with authority to access the data collection
 
     :return: A new :py:class:`Session`
@@ -128,7 +140,5 @@ def connect(cfg = None , jar = None):
     if jar is None:
         jar = os.environ.get('ATERMJAR', "$HOME/aterm.jar")
 
-    session = Session()
-    session.open(cfg, jar)
+    session = Session(cfg, jar)
     return session
-

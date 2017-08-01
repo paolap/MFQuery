@@ -14,7 +14,7 @@ limitations under the License.
 """
 
 import MFQuery.MF.MF as mf
-from tests.MF.mf_fixtures import aterm_files, cmd, res, res_list
+from tests.MF.mf_fixtures import aterm_files, cmd, res, resp_list
 
 
 def test_connect(aterm_files):
@@ -36,13 +36,14 @@ def test_parse_response(res):
     assert s.parse_response(res) == [{"key1": ["val1"]}, {"key2": [{"sub2": "val2"}, "val3"]} ]
 
 
-def test_response(res_list):
+def test_response(resp_list):
     s = mf.connect()
-    assert s.response(res_list[0], 'count') == '144'
-    assert s.response(res_list[1], 'get-id') == ['a', 'b', 'c']
-    assert s.response(res_list[2], '''get-distinct-values :xpath -ename a "xvalue('b')"''') == ['d', 'e', 'f']
-    assert s.response(res_list[3], 'get-name') == ['a', 'b']
-    assert s.response(res_list[4], 'get-path') == ['a', 'b']
+    assert s.response(resp_list[0], 'count') == '144'
+    assert s.response(resp_list[1], 'get-id') == ['a', 'b', 'c']
+    assert s.response(resp_list[2], '''get-distinct-values :xpath -ename a "xvalue('b')"''') == ['d', 'e', 'f']
+    assert s.response(resp_list[3], 'get-name') == ['a', 'b']
+    assert s.response(resp_list[4], 'get-path') == ['a', 'b']
+
 
 def test_execute():
     assert 1

@@ -17,7 +17,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-from MFQuery.data import *
+from MFQuery.data import wath_meta
 
 
 def test_pickle():

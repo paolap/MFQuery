@@ -22,6 +22,7 @@ def aterm_files():
     jar_path = '/User/tizio/aterm.jar'
     return (cfg_path, jar_path)
 
+
 @pytest.fixture(scope="module")
 def cmd():
     cmd = "some command"
@@ -50,12 +51,13 @@ def res():
              :key2 -sub2 "val2" "val3" '''
     return res
 
+
 @pytest.fixture(scope="module")
-def res_list():
-    res_list = [ [{'value': [{'nbe': '144'}, '144']}],
+def resp_list():
+    resp_list = [ [{'value': [{'nbe': '144'}, '144']}],
                  [{'id': [{'version': '2'}, 'a']}, {'id': [{'version': '2'}, 'b']}, {'id': [{'version': '3'}, 'c']}],
                  [{'a': [{'nbe': '36'}, 'd']}, {'a': [{'nbe': '36'}, 'e']}, {'a': [{'nbe': '36'}, 'f']}],
                  [{'name': [{'id': '1', 'version': '2'}, 'a']}, {'name': [{'id': '2', 'version': '2'}, 'b']}],
                  [{'path': [{'id': '1', 'version': '2'}, 'a']}, {'path': [{'id': '2', 'version': '2'}, 'b']}]
                ]
-    return res_list
+    return resp_list
