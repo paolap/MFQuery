@@ -39,9 +39,10 @@ def test_parse_response(res):
 def test_response(res_list):
     s = mf.connect()
     assert s.response(res_list[0], 'count') == '144'
-    assert s.response(res_list[1], '') == ['a', 'b', 'c']
-    assert s.response(res_list[2], 'get-distinct-values') == ['d', 'e', 'f']
-
+    assert s.response(res_list[1], 'get-id') == ['a', 'b', 'c']
+    assert s.response(res_list[2], '''get-distinct-values :xpath -ename a "xvalue('b')"''') == ['d', 'e', 'f']
+    assert s.response(res_list[3], 'get-name') == ['a', 'b']
+    assert s.response(res_list[4], 'get-path') == ['a', 'b']
 
 def test_execute():
     assert 1

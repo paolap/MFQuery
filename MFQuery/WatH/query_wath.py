@@ -183,8 +183,9 @@ def main():
     # build query and then call MF.query to execute
     squery = build_query(query_args)
     #saction = ""
-    saction = 'count'
-    #saction = '''get-distinct-values :xpath -name "path" xvalue('namespace')'''
+    #saction = 'count'
+    saction = '''get-distinct-values :xpath -ename url''' +\
+              ''' "replace(xvalue('namespace'),'/WatH-Test/model_output2/','')"'''
     output = session.query(squery,action=saction)
     print(session.response(output,saction))
     # get possible combinations of 'year' and 'sst'

@@ -54,5 +54,8 @@ def res():
 def res_list():
     res_list = [ [{'value': [{'nbe': '144'}, '144']}],
                  [{'id': [{'version': '2'}, 'a']}, {'id': [{'version': '2'}, 'b']}, {'id': [{'version': '3'}, 'c']}],
-                 [{'url': [{'nbe': '36'}, 'd']}, {'url': [{'nbe': '36'}, 'e']}, {'url': [{'nbe': '36'}, 'f']}] ]
+                 [{'a': [{'nbe': '36'}, 'd']}, {'a': [{'nbe': '36'}, 'e']}, {'a': [{'nbe': '36'}, 'f']}],
+                 [{'name': [{'id': '1', 'version': '2'}, 'a']}, {'name': [{'id': '2', 'version': '2'}, 'b']}],
+                 [{'path': [{'id': '1', 'version': '2'}, 'a']}, {'path': [{'id': '2', 'version': '2'}, 'b']}]
+               ]
     return res_list

@@ -33,8 +33,8 @@ class Session(object):
          :param squery: a query string
          :param action: an action to execute with the query results, default to showing returned assets
          :return server response after executing query '''
-        if action != "":
-            squery += ' :action ' + action
+        if action == "" or action is None : action = 'count'
+        squery += ' :action ' + action
         script = self.wrapper(squery)
         out = self.execute(script)
         result = self.parse_response(out)
@@ -84,10 +84,27 @@ class Session(object):
                  if '' returns a list with assets
                  if 'get-distinct-values' returns list with distinct assets urls
         '''
+        kaction=action.split(" ")[0]
+        xvalue=""
+        if kaction in ['get-value', 'get-distinct-values', 'get-values']:
+            xvalue = action.split("-ename ")[1].split(" ")[0]
         action_dict={'count': 'value',
-                     '': 'id',
-                     'get-distinct-values': 'url'}
-        response = [x for y in response_dict for x in y[action_dict[action]]  if type(x) is str]
+                     'get-id': 'id',
+                     'get-distinct-values': 'url',
+                     'get-name': 'name',
+                     'get-path':  'path',
+                     'get-value': xvalue,
+                     'get-values': xvalue,
+                     'get-distinct-values': xvalue}
+        #  get - value, get - values, get - distinct - values, get - content, get - geo - shape,
+        # get - geo - histogram, get - transformed, get - content - status - statistics, get - all, pipe, sum, min, max,
+        # avg]
+        # probably shouldn't be included: get-cid, get-rid, get-path
+        # can be included but complex: get-meta, get-template-meta (can't see difference yet), get-extended-meta
+        # get-value
+        key = action_dict[kaction]
+        subdict = [y for y in response_dict if key in y.keys() ]
+        response = [x for y in subdict for x in y[key]  if type(x) is str]
         if len(response) == 1: return response[0]
         return response
 
