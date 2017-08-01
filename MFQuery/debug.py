@@ -24,7 +24,8 @@ import os
 from pprint import pformat
 from .pkg_info import __version__
 
-class Info:
+
+class Info(object):
     def __init__(self):
         self.host= socket.getfqdn(),
         self.version= __version__,

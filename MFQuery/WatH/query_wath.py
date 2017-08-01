@@ -153,31 +153,27 @@ def build_query(kwargs):
 
 
 def process_output():
-    base = ( '''asset.query :where "namespace>=/WatH-Test/model_output2 '''
-             '''and type='application/x-netcdf' and QUERY ''' 
-             ''' :action get-distinct-values ''' )
-    thredds_out = ( ''' :xpath -ename url string.format('https://http://144.6.229.249/thredds/catalog/aggregated%s?','''
-                     ''',replace(xvalue('namespace'),'/WatH-Test/model_output2',''))''' )
-    base2 =  ''' curl --insecure -X POST -H 'Content-Type: text/xml; charset=utf-8' -d ' ''' + \
-             '''<request><service name="asset.query" session="15bf0af565bbGXRL1cTxXXoqHKmlwXfGBUNZGo69yLk"><args>''' + \
-             '''<where>namespace>=/WatH-Test/model_output2 and type='application/x-netcdf' and (YOUR_QUERY)''' + \
-             '''</where><action>get-distinct-values</action><xpath name="url">string.format''' + \
-             '''('https://thredds.com.au%s?',replace(xvalue('namespace'),'/WatH-Test/model_output2',''))''' + \
-             '''</xpath></args></service></request>' 'https://livearc-00.tpac.org.au/__mflux_svc__' " '''
-    return base
+    pass
+    return
 
 
 def tds_connect():
     ''' open connection to thredds catalog, return datasets list '''
-    cat = TDSCatalog('http://144.6.229.249/thredds/catalog/aggregated/catalog.xml')
+    global tds, xml_suf
+    cat = TDSCatalog(tds + 'aggregated' + xml_suf)
     return list(cat.datasets.values())
 
 
 def main():
     ''' '''
+    global tds, xml_suf
     # parse input arguments 
     query_args, out_args, admin = assign_constraints()
     print(out_args)
+    # thredds root url
+    tds = 'http://144.6.229.249/thredds/catalog/'
+    html_suf = '/catalog.html'
+    xml_suf = '/catalog.xml'
     # establish session 
     session = MF.connect()
     # build query and then call MF.query to execute
@@ -187,16 +183,28 @@ def main():
     saction = '''get-distinct-values :xpath -ename url''' +\
               ''' "replace(xvalue('namespace'),'/WatH-Test/model_output2/','')"'''
     output = session.query(squery,action=saction)
-    print(session.response(output,saction))
     # get possible combinations of 'year' and 'sst'
     # build one query for each of the year/sst combinations
-    sys.exit()
 
 
     # do something with result!
     # open file?
-    if opendap or ncss:
-        dataset = tds_connect()
-
+    lname_dict = {'pcl': '/global_monthly_mean_diagnostic_',
+                  'pdl': '/regional_daily_mean_diagnostic_',
+                  'pel': '/regional_monthly_mean_diagnostic_'}
+    if out_args['opendap'] or out_args['ncss']:
+       urls_list = []
+       if out_args['output_kind']:
+           tail = [lname_dict[x] for x in out_args['output_kind']]
+       else:
+           tail = [html_suf]
+       # dataset = tds_connect()
+       for y in tail:
+           urls_list.extend( [tds + 'aggregated/' + x + y for x in session.response(output,saction) ] )
+       for url in urls_list:
+           if url[-1] == "_": print( url + url.split("/")[-2] + ".nc" )
+            # http://144.6.229.249/thredds/dodsC/aggregated/2013/NAT/HadGEM2-ES/dir00001/n783/n783.pel.ncml.html
+            # http://144.6.229.249/thredds/catalog/aggregated/2013/NAT/HadGEM2-ES/dir00001/n783/catalog.html?dataset=WathAggregated/2013/NAT/HadGEM2-ES/dir00001/n783/n783.pel.ncml
+    print(urls_list)
 if __name__ == "__main__":
     main()

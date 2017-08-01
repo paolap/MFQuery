@@ -83,7 +83,7 @@ def res_dict(res):
     subkey = None
     if res[0][1] != 'key':
         print('all responses should start with a key')
-        print(response)
+        print(res)
         sys.exit()
     else:
         i=0
