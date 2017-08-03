@@ -25,6 +25,7 @@ from siphon.catalog import TDSCatalog
 from siphon.ncss import NCSS
 from MFQuery.MF.helpers import *
 import MFQuery.MF.MF as MF
+from MFQuery.MF.ncss_subset import ncss_subset
 # import the dictionaries describing the metadata associated with the directory structure and the experiment
 from MFQuery.data import wath_meta
 
@@ -162,15 +163,6 @@ def process_output():
     return
 
 
-def tds_connect():
-    """
-    :return: datasets list after opening connection to Thredds catalogue
-    """
-    global tds, xml_suf
-    cat = TDSCatalog(tds + 'aggregated' + xml_suf)
-    return list(cat.datasets.values())
-
-
 def main():
     """
      main program
@@ -202,26 +194,27 @@ def main():
         odap_urls = []
         ncss_urls = []
         if out_args['output_kind']:
-            tds_tail = [ html_suf + "?dataset=WathAggregated/#." + x + ".ncml"
+            tds_tail = [ html_suf + "?dataset=WathA/#_" + x + ".ncml"
                          for x in out_args['output_kind']]
-            odap_tail = ["/#." + x + ".ncml.html" for x in out_args['output_kind']]
+            odap_tail = ["/#_" + x + ".ncml.html" for x in out_args['output_kind']]
         else:
             tds_tail = [html_suf]
         # dataset = tds_connect()
         for path in session.response(output,saction):
             umid = path.split("/")[-1]
-            root = tds + 'aggregated/' + path
+            root = tds + 'WatHA/' + path
             tds_urls.extend([ root + y.replace("#",path + "/" + umid) for y in tds_tail])
             odap_urls.extend([root.replace("catalog","dodsC") + y.replace("#",umid) for y in odap_tail])
             ncss_urls.extend([root.replace("catalog", "ncss") + y.replace("#", umid)[:-5] + ncss_suf for y in odap_tail])
-            # http://144.6.229.249/thredds/dodsC/aggregated/2013/NAT/HadGEM2-ES/dir00001/n783/n783.pel.ncml.html
-            # http://144.6.229.249/thredds/catalog/aggregated/2013/NAT/HadGEM2-ES/dir00001/n783/catalog.html?
-            # dataset=WathAggregated/2013/NAT/HadGEM2-ES/dir00001/n783/n783.pel.ncml
-            # http://144.6.229.249/thredds/ncss/aggregated/2013/NAT/HadGEM2-ES/dir00001/n783/n783.pcl.ncml/dataset.html
+            # http://144.6.229.249/thredds/dodsC/WatHA/2013/NAT/HadGEM2-ES/dir00001/n783/n783.pel.ncml.html
+            # http://144.6.229.249/thredds/catalog/WatHA/2013/NAT/HadGEM2-ES/dir00001/n783/catalog.html?
+            # dataset=WathA/2013/NAT/HadGEM2-ES/dir00001/n783/n783_pel.ncml
+            # http://144.6.229.249/thredds/ncss/WatHA/2013/NAT/HadGEM2-ES/dir00001/n783/n783_pcl.ncml/dataset.html
     print(tds_urls)
     print(odap_urls)
     print(ncss_urls)
-
+    # add subset ncss option if variables are passed and ncss is true and odap option if variables are passed and odap true
+    print( ncss_subset(tds))
 
 if __name__ == "__main__":
     main()
